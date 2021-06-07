@@ -34,7 +34,7 @@ def getCookies():
     driver = webdriver.Chrome("C:\\Users\\hhhtylerw\\chromedriver.exe", options=options)
     driver.get("https://one.uf.edu/")
     time.sleep(3)
-    driver.find_element_by_xpath('//*[@id="root"]/main/div[1]/div/div/div/div[2]/button/span[1]/div').click() # Click login
+    driver.find_element_by_xpath('//*[@id="root"]/main/div[1]/div/div/div/div[2]/button').click() # Click login
     time.sleep(1)
     driver.find_element_by_xpath('//*[@id="username"]').send_keys(email) # Type email
     time.sleep(1)
@@ -46,7 +46,14 @@ def getCookies():
     driver.find_element_by_xpath('//*[@id="auth_methods"]/fieldset/div[1]/button').click() # Click DUO Push
     driver.switch_to.default_content()
 
+    oldtime = int(time.time())
     while True: # Wait for DUO Push approval
+        newtime = int(time.time())
+        if newtime - oldtime >= 60:
+            driver.quit()
+            print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + " | " + "Login not confirmed, sleeping")
+            return "", ""
+
         if driver.current_url == "https://one.uf.edu/":
             break
         time.sleep(1)
@@ -69,6 +76,8 @@ def getCookies():
 
 while True: # Loop monitor forever
     try: # Attempt to monitor and parse classes / Will try to get login cookies if fails
+        if sidCookie == "" or shibCookie == "": # Check if cookies are blank
+            print(1/0) # Will purposefully break try
         for monitor in monitorList:
             cookies = {
                 'connect.sid': sidCookie,
@@ -154,8 +163,8 @@ while True: # Loop monitor forever
             sidCookie, shibCookie = getCookies() 
         except: # Login failed, start over
             pass
-    print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + " | " + "Sleeping 30 minutes")
-    time.sleep(60 * 30)
+    print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + " | " + "Sleeping 120 minutes")
+    time.sleep(60 * 120)
 
 
 
