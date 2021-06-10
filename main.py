@@ -52,6 +52,7 @@ def getCookies():
         if newtime - oldtime >= 60:
             driver.quit()
             print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + " | " + "Login not confirmed, sleeping")
+            time.sleep(60 * 120)
             return "", ""
 
         if driver.current_url == "https://one.uf.edu/":
@@ -76,8 +77,6 @@ def getCookies():
 
 while True: # Loop monitor forever
     try: # Attempt to monitor and parse classes / Will try to get login cookies if fails
-        if sidCookie == "" or shibCookie == "": # Check if cookies are blank
-            print(1/0) # Will purposefully break try
         for monitor in monitorList:
             cookies = {
                 'connect.sid': sidCookie,
@@ -156,15 +155,16 @@ while True: # Loop monitor forever
                 if i["openSeats"] != 0:
                     print("Open seat found!\nSending text...")
                     client.messages.create(body=f'Open {monitor["classNumber"]} seat found!',from_='+12392408716',to='+18505085707')
-            time.sleep(15)
+            time.sleep(60 * 15)
+        print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + " | " + "Sleeping 120 minutes")
+        time.sleep(60 * 30)
 
     except: # Get new login cookies
         try: # Attemp to login
             sidCookie, shibCookie = getCookies() 
         except: # Login failed, start over
             pass
-    print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + " | " + "Sleeping 120 minutes")
-    time.sleep(60 * 120)
+
 
 
 
