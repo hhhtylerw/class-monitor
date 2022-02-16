@@ -26,7 +26,7 @@ monitorList = [
 ]
 classBlacklist = [17059,15424,17080]
 sidCookie, shibCookie = "", ""
-client = Client("AC287aed74055f97dd0a0f6797d8f0ebf4", "81793dea0f6ab3d9d5b269428a64d19b")
+client = Client(login.getOne(), login.getTwo())
 
 def getCookies():
     options = webdriver.ChromeOptions()
@@ -154,7 +154,7 @@ while True: # Loop monitor forever
                 #print(i["openSeats"])
                 if i["openSeats"] != 0:
                     print("Open seat found!\nSending text...")
-                    client.messages.create(body=f'Open {monitor["classNumber"]} seat found!',from_='+12392408716',to='+18505085707')
+                    client.messages.create(body=f'Open {monitor["classNumber"]} seat found!',from_='+12392408716',to=login.getPhone())
             time.sleep(60 * 15)
         print(datetime.now().strftime("%d/%m/%Y %H:%M:%S") + " | " + "Sleeping 120 minutes")
         time.sleep(60 * 30)
