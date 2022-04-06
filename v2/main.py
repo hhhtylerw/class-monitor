@@ -1,4 +1,4 @@
-import requests, json, time
+import requests, json, time, sys
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
@@ -13,10 +13,7 @@ service = Service(login.getchromedriverpath())
 headers = {
     "Content-Type": "application/json"
 }
-cookies = {
-    "ONEUF_SESSION": "R",
-    "_shibsession_68747470733a2f2f73702e6c6f67696e2e75666c2e6564752f75726e3a6564753a75666c3a70726f643a30303734312f68747470733a2f2f73702e6c6f67696e2e75666c2e6564752f75726e3a6564753a75666c3a70726f643a30303734312f": "ATIO"
-}
+cookies = {}
 client = Client(login.getsid(), login.gettoken())
 
 def get_course_info():
@@ -27,8 +24,7 @@ def get_course_info():
 
         resp = json.loads(r.text)
         if len(resp) == 0:
-            print("No courses found")
-            return True
+            sys.exit("No courses found")
         for section in resp[0]["COURSES"][0]["sections"]:
             print(section["waitList"])
             if section["waitList"]["cap"] == section["waitList"]["total"]:
@@ -72,7 +68,7 @@ def get_uf_session():
         driver.find_element(By.XPATH, '//*[@id="main-content"]/div[1]/div/div[2]/div/div/button[3]').click()
         time.sleep(delay)
         driver.find_element(By.XPATH, '//*[@id="main-content"]/div[1]/div/div[1]/div/div[2]/div/a/span[1]').click()
-        time.sleep(10)
+        time.sleep(delay)
         for cookie in driver.get_cookies():
             if cookie["name"] == "ONEUF_SESSION":
                 cookies["ONEUF_SESSION"] = cookie["value"]
@@ -91,7 +87,7 @@ def monitor():
     while True:
         if not get_course_info():
             get_uf_session()
-        time.sleep(60 * 5)
+        time.sleep(60 * 15)
 
 
 #get_course_info()
