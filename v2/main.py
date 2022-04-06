@@ -3,49 +3,47 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
+from twilio.rest import Client
 import login
 
 delay = 4
 options = Options()
 options.add_experimental_option('excludeSwitches', ['enable-logging', 'enable-automation'])
-service = Service("C:/Users/hhhtylerw/chromedriver.exe")
-courseid = "CIS4301"
-coursecredits = "3"
+service = Service(login.getchromedriverpath())
 headers = {
     "Content-Type": "application/json"
 }
-#cookies = {
-#    "ONEUF_SESSION": "s%3ARQOPhaO6WUMqNDcmExHAY21DCnKp340r.7b897vl8F3ezaNqsrC1iF2X0bPd2C7190k2z%2Bhz%2BkZ8",
-#    "_shibsession_68747470733a2f2f73702e6c6f67696e2e75666c2e6564752f75726e3a6564753a75666c3a70726f643a30303734312f68747470733a2f2f73702e6c6f67696e2e75666c2e6564752f75726e3a6564753a75666c3a70726f643a30303734312f": "_dc35f207a47b06b6e71461499a39ef89"
-#}
 cookies = {
     "ONEUF_SESSION": "R",
     "_shibsession_68747470733a2f2f73702e6c6f67696e2e75666c2e6564752f75726e3a6564753a75666c3a70726f643a30303734312f68747470733a2f2f73702e6c6f67696e2e75666c2e6564752f75726e3a6564753a75666c3a70726f643a30303734312f": "ATIO"
 }
+client = Client(login.getsid(), login.gettoken())
 
-def get_course_info(courseid, coursecredits):
+def get_course_info():
+    print("Getting course info")
     try:
-        print("req1")
-        r = requests.get(f"https://one.uf.edu/api/myschedule/course-search?ai=false&auf=false&category=CWSP&class-num=&course-code={courseid}&course-title=&cred-srch=&credits={coursecredits}&day-f=&day-m=&day-r=&day-s=&day-t=&day-w=&dept=&eep=&fitsSchedule=false&ge=&ge-b=&ge-c=&ge-d=&ge-h=&ge-m=&ge-n=&ge-p=&ge-s=&instructor=&last-control-number=0&level-max=&level-min=&no-open-seats=false&online-a=&online-c=&online-h=&online-p=&period-b=&period-e=&prog-level=&qst-1=&qst-2=&qst-3=&quest=false&term=2228&wr-2000=&wr-4000=&wr-6000=&writing=false&var-cred=&hons=false", headers=headers, cookies=cookies)
-
+        r = requests.get(f"https://one.uf.edu/api/myschedule/course-search?ai=false&auf=false&category=CWSP&class-num=&course-code={login.getcourseid()}&course-title=&cred-srch=&credits={login.getcoursecredits()}&day-f=&day-m=&day-r=&day-s=&day-t=&day-w=&dept=&eep=&fitsSchedule=false&ge=&ge-b=&ge-c=&ge-d=&ge-h=&ge-m=&ge-n=&ge-p=&ge-s=&instructor=&last-control-number=0&level-max=&level-min=&no-open-seats=false&online-a=&online-c=&online-h=&online-p=&period-b=&period-e=&prog-level=&qst-1=&qst-2=&qst-3=&quest=false&term=2228&wr-2000=&wr-4000=&wr-6000=&writing=false&var-cred=&hons=false", headers=headers, cookies=cookies)
         print(r.status_code)
 
         resp = json.loads(r.text)
         if len(resp) == 0:
             print("No courses found")
-            return
-        print("req2")
-        print(resp[0]["COURSES"][0]["sections"][0]["waitList"])
-        if resp[0]["COURSES"][0]["sections"][0]["waitList"]["cap"] == resp[0]["COURSES"][0]["sections"][0]["waitList"]["total"]:
-            print("Course is full")
-        else:
-            print("Course is not full")
-        print("req3")
+            return True
+        for section in resp[0]["COURSES"][0]["sections"]:
+            print(section["waitList"])
+            if section["waitList"]["cap"] == section["waitList"]["total"]:
+                #print("Course is full")
+                pass
+            else:
+                #print("Course is not full")
+                client.messages.create(to=login.getphone(), from_=login.gettwiliophone(), body=f"Seat open for {login.getcourseid()}")
+                time.sleep(1)
         return True
     except:
         return False
 
 def get_uf_session():
+    print("Getting UF session")
     try:
         driver = webdriver.Chrome(service=service, options=options)
         driver.get("https://one.uf.edu/")
@@ -62,10 +60,11 @@ def get_uf_session():
         start = time.time()
         while True:
             if time.time() - start < 60 and driver.current_url == "https://one.uf.edu/":
-                print("SUCCESS")
+                #print("SUCCESS")
                 break
             elif time.time() - start > 60:
-                print("FAILURE")
+                #print("FAILURE")
+                time.sleep(60 * 120)
                 return False
             time.sleep(1)
         driver.get("https://one.uf.edu/myschedule/")
@@ -79,10 +78,10 @@ def get_uf_session():
                 cookies["ONEUF_SESSION"] = cookie["value"]
             elif cookie["name"] == "_shibsession_68747470733a2f2f73702e6c6f67696e2e75666c2e6564752f75726e3a6564753a75666c3a70726f643a30303734312f68747470733a2f2f73702e6c6f67696e2e75666c2e6564752f75726e3a6564753a75666c3a70726f643a30303734312f":
                 cookies["_shibsession_68747470733a2f2f73702e6c6f67696e2e75666c2e6564752f75726e3a6564753a75666c3a70726f643a30303734312f68747470733a2f2f73702e6c6f67696e2e75666c2e6564752f75726e3a6564753a75666c3a70726f643a30303734312f"] = cookie["value"]
-        print("SUCCESS\n", cookies)
+        #print("SUCCESS\n", cookies)
         return True
     except:
-        print("FAILURE")
+        #print("FAILURE")
         return False
     finally:
         driver.quit()
@@ -90,11 +89,11 @@ def get_uf_session():
 def monitor():
     get_uf_session()
     while True:
-        if not get_course_info("CSCI", "3"):
+        if not get_course_info():
             get_uf_session()
         time.sleep(60 * 5)
 
 
-#get_course_info(courseid, coursecredits)
+#get_course_info()
 #get_uf_session()
 monitor()
