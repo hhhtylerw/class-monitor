@@ -60,7 +60,6 @@ def get_uf_session():
                 break
             elif time.time() - start > 60:
                 #print("FAILURE")
-                time.sleep(60 * 120)
                 raise Exception("Timeout")
             time.sleep(1)
         driver.get("https://one.uf.edu/myschedule/")
@@ -79,6 +78,7 @@ def get_uf_session():
         return True
     except:
         driver.quit()
+        time.sleep(60 * 120)
         return False
 
 def monitor():
